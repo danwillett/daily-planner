@@ -1,8 +1,30 @@
-// Wrap all code that interacts with the DOM in a call to jQuery to ensure that
-// the code isn't run until the browser has finished rendering all the elements
-// in the html.
+var colorHourSlots = function() {
+  console.log("current hour: " + currentHour)
+  for (var i = 0; i < timeIds.length; i++) {
+  console.log("compare hour: " + loadHour[i])
+    // compares time slot id with current hour and then assigns past, present or future styling 
+    if (loadHour[i] < currentHour) {
+      console.log("less")
+      $('#'+timeIds[i]).removeClass("present future")
+      $('#'+timeIds[i]).addClass("past")
+      
+    } else if (loadHour[i] == currentHour) {
+      console.log("current time")
+      console.log($(timeIds[i]))
+      $('#'+timeIds[i]).removeClass("past future")
+      $('#'+timeIds[i]).addClass("present") 
+    } else {
+      console.log("future")
+      console.log($(timeIds[i]))
+      $('#'+timeIds[i]).removeClass("present past")
+      $('#'+timeIds[i]).addClass("future")
+    }
+  }
+}
+
 
 // grabs existing entries from local storage and pastes them onto hour scheduler if they exist
+// also sets initial hour slot colors based on future, past, and present hour
 var loadCalendarEntries = function () {
   for (var i = 0; i < timeIds.length; i++) {
     console.log(localStorage.getItem(timeIds[i]))
@@ -36,14 +58,42 @@ var PutItOnTheCalendar = function () {
   })
 };
 
-
-
-
 //need a function that loops through and grabs local storage items for the day
 // if daytime = today or whatever then load items from local storage. If not, clear local storage
 
+var currentHour = dayjs().hour();
+console.log("hour: " + currentHour)
+var timeIds = ["hour-9", "hour-10", "hour-11", "hour-12", "hour-1", "hour-2", "hour-3", "hour-4", "hour-5"];
+var loadHour = [9, 10, 11, 12, 13, 14, 15, 16, 17];
+
+
 $(function () {
 
+  colorHourSlots()
+
+  var weekDayEl = $("#weekDay");
+  var dateEl = $("#date")
+
+  setInterval(function(){
+    var date = dayjs().format('MMMM D YYYY');
+    var time = dayjs().format('h:mm a');
+
+    var dayTime = dayjs().format('dddd') + ", " + time;
+
+    $(weekDayEl).text(dayTime);
+    $(dateEl).text(date);
+
+    // reruns the hour color stylings when the hour changes
+    var hour = dayjs().hour();
+    if (hour !== currentHour) {
+      colorHourSlots()
+      currentHour = dayjs().hour();
+      console.log("hour: " + currentHour)
+    }
+    
+
+  }, 1000)
+  
   // if there's already an existing record for today in localstorage, load those entries
   var today = dayjs().format('MMM D, YYYY');
   var timestamp = localStorage.getItem("timestamp")
@@ -58,8 +108,6 @@ $(function () {
   PutItOnTheCalendar();
 
 })
-
-var timeIds = ["hour-9", "hour-10", "hour-11", "hour-12", "hour-1", "hour-2", "hour-3", "hour-4", "hour-5"];
 
 
   // TODO: Add a listener for click events on the save button. This code should
